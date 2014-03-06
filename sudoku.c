@@ -1,6 +1,8 @@
 /*
  * CriaÃ§Ã£o de uma nova thread. SerÃ¡ que ela serÃ¡ sempre executada?
  */
+
+// SUCESSO GAY
 #include <pthread.h>
 #include <stdio.h>
 
