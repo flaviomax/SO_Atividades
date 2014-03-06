@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <stdio.h>
 
+int penis;
 
 volatile int tabuleiro[9][9];
 
