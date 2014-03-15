@@ -58,7 +58,11 @@ void* f_thread_quadrados(void *v) {
 				    boolean_ocorrencias [tabuleiro [i + x][j + y] - 1] = 1;
 				  else{
 				    flag_errado = 1;
+<<<<<<< HEAD
 				    printf("Mais de uma ocorrencia do numero %d no quadrado %d\n", tabuleiro [i + x][j + y], ( (x + 1) + (y/3) ) );
+=======
+				    printf("Mais de uma ocorrencia do numero %d no quadrado %d\n", tabuleiro [i + x][j + y], (1 + x) * (1 + y));
+>>>>>>> 651975f3602ac50cb9d855eccf37e7704aee9935
 				  }
 				}
 			}
@@ -95,8 +99,13 @@ int main() {
     fprintf(stderr, "Erro na criacao da thread. \n");
 
   pthread_join(linhas, NULL);
+<<<<<<< HEAD
   pthread_join(colunas, NULL);
   pthread_join(quadrados, NULL);
+=======
+	pthread_join(colunas, NULL);
+	pthread_join(quadrados, NULL);
+>>>>>>> 651975f3602ac50cb9d855eccf37e7704aee9935
   
   if (flag_errado == 0)
     printf("Solucao correta!\n");

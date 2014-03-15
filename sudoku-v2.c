@@ -80,6 +80,7 @@ int main() {
 		if (pthread_create(&linhas[i], NULL, f_thread_linhas,(void*) &i))
 		  fprintf(stderr, "Erro na criacao da thread. \n");
 		if (pthread_create(&colunas[i], NULL, f_thread_colunas, (void*) &i))
+<<<<<<< HEAD
 	      fprintf(stderr, "Erro na criacao da thread. \n");
   	    if (pthread_create(&quadrados[i], NULL, f_thread_quadrados, (void*) &i))
 	      fprintf(stderr, "Erro na criacao da thread. \n");
@@ -87,6 +88,15 @@ int main() {
 	
   for (i = 0; i < 9; i++){
   	    pthread_join(linhas[i], NULL);
+=======
+	    fprintf(stderr, "Erro na criacao da thread. \n");
+  	if (pthread_create(&quadrados[i], NULL, f_thread_quadrados, (void*) &i))
+	    fprintf(stderr, "Erro na criacao da thread. \n");
+	}
+	
+  for (i = 0; i < 9; i++){
+  	pthread_join(linhas[i], NULL);
+>>>>>>> 651975f3602ac50cb9d855eccf37e7704aee9935
 		pthread_join(colunas[i], NULL);
 		pthread_join(quadrados[i], NULL);
   }
