@@ -1,5 +1,5 @@
-/* Usa 3 threads para verificar se um jogo de sudoku foi completado corretamente: uma analisa por linhas,
-outra por colunas e outra por quadrados 3 x 3 */
+/* Usa 3 threads para verificar as ocorrencias de cada numero nas linhas, colunas e quadrados de um jogo de sudoku incompleto.
+A partir dessa analise de ocorrencias, gera dicas de preenchimento para cada posição vazia do sudoku*/
 
 #include <pthread.h>
 #include <stdio.h>
