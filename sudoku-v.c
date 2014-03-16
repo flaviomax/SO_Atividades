@@ -1,5 +1,5 @@
-/* Usa 3 threads para verificar se um jogo de sudoku foi completado corretamente: uma analisa por linhas,
-outra por colunas e outra por quadrados 3 x 3 */
+/* Usa 3 tipos de thread para analisar cada linha, coluna e 
+quadrado 3x3 de um sudoku. No total, são instanciadas 27 threads. */
 
 #include <pthread.h>
 #include <stdio.h>
@@ -7,65 +7,54 @@ outra por colunas e outra por quadrados 3 x 3 */
 volatile int tabuleiro[9][9];
 volatile int flag_errado = 0;
 
-/** Thread que verifica se a solução está correta linha a linha */
-void* f_thread_linhas(void *v) {
-  int i, j;
-  int boolean_ocorrencias[9] = {0}; 
-  for (i = 0; i < 9; i++){
-    for (j = 0; j < 9; j++){
-      if (boolean_ocorrencias [tabuleiro [i][j] - 1] == 0)
-        boolean_ocorrencias [tabuleiro [i][j] - 1] = 1;
-      else{
-        flag_errado = 1; /* Já há uma ocorrencia do numero na linha */
-        printf("Mais de uma ocorrencia do numero %d na linha %d\n", tabuleiro [i][j], (i + 1));
-      }
+/** Thread que verifica se a linha (passada em v) é valida */
+void* f_thread_linhas_v(void *v) {
+  int m = *(int *) v;
+  int n, boolean_ocorrencias[9] = {0}; 
+  for (n = 0; n < 9; n++){
+    if (boolean_ocorrencias [tabuleiro [m][n] - 1] == 0)
+      boolean_ocorrencias [tabuleiro [m][n] - 1] = 1;
+    else{
+      flag_errado = 1; /* Já há uma ocorrencia do numero na linha */
+      printf("Mais de uma ocorrencia do numero %d na linha %d\n", tabuleiro [m][n], (m + 1));
     }
-    for (j = 0; j < 9; j++)
-      boolean_ocorrencias[j] = 0;
   }
   return NULL;
 }
 
-/** Verifica a solução coluna a coluna */
-void* f_thread_colunas(void *v) {
-  int i, j;
-  int boolean_ocorrencias[9] = {0}; 
-  for (i = 0; i < 9; i++){
-    for (j = 0; j < 9; j++){
-      if (boolean_ocorrencias [tabuleiro [j][i] - 1] == 0)
-        boolean_ocorrencias [tabuleiro [j][i] - 1] = 1;
-      else{
-        flag_errado = 1;
-        printf("Mais de uma ocorrencia do numero %d na coluna %d\n", tabuleiro [j][i], (i + 1));
-      }
+/** Verifica a coluna v */
+void* f_thread_colunas_v(void *v) {
+  int m = *(int *) v;
+  int n, boolean_ocorrencias[9] = {0};
+  for (n = 0; n < 9; n++){
+    if (boolean_ocorrencias [tabuleiro [n][m] - 1] == 0)
+      boolean_ocorrencias [tabuleiro [n][m] - 1] = 1;
+    else{
+      flag_errado = 1;
+      printf("Mais de uma ocorrencia do numero %d na coluna %d\n", tabuleiro [n][m], (m + 1));
     }
-    for (j = 0; j < 9; j++)
-      boolean_ocorrencias[j] = 0;
   }
   return NULL;
 }
 
-/** Verifica a solução a cada quadrado 3x3. Os quadrados são contados
+/** Verifica se está válido o quadrado v 3x3. Os quadrados são contados
 da esquerda para a direita, de cima para baixo */
-void* f_thread_quadrados(void *v) {
-  int i, j, x, y;
-  int boolean_ocorrencias[9] = {0}; 
-  for (x = 0; x < 9; x += 3){
-  	for (y = 0; y < 9; y += 3){
-			for (i = 0; i < 3; i++){
-				for (j = 0; j < 3; j++){
-				  if (boolean_ocorrencias [tabuleiro [i + x][j + y] - 1] == 0)
-				    boolean_ocorrencias [tabuleiro [i + x][j + y] - 1] = 1;
-				  else{
-				    flag_errado = 1;
-				    printf("Mais de uma ocorrencia do numero %d no quadrado %d\n", tabuleiro [i + x][j + y], ( (x + 1) + (y/3) ) );
-				  }
-				}
-			}
-			for (j = 0; j < 9; j++)
-				boolean_ocorrencias[j] = 0;
+void* f_thread_quadrados_v(void *v) {
+  int quadrado = *(int *) v;
+  int i, j, x, y, boolean_ocorrencias[9] = {0};
+  x = (quadrado / 3) * 3; /* temos a linha do quadrado */
+  y = (quadrado % 3) * 3; /* temos a coluna */
+	for (i = x; i < (3 + x); i++){
+		for (j = y; j < (3 + y); j++){
+		 // printf ("entrou, quadrado %d, %d, %d\n", quadrado, i, j);
+		  if (boolean_ocorrencias [tabuleiro [i][j] - 1] == 0)
+		    boolean_ocorrencias [tabuleiro [i][j] - 1] = 1;
+		  else{
+		    flag_errado = 1;
+				printf("Mais de uma ocorrencia do numero %d no quadrado %d\n", tabuleiro [i][j], (quadrado + 1));
+		  }
 		}
-  }
+	}
   return NULL;
 }
 
@@ -78,27 +67,29 @@ int main() {
       char temp;
       scanf("%c ", &temp);
       if (temp != 'X')
-	tabuleiro [i][j] = (temp - '0');
+				tabuleiro [i][j] = (temp - '0');
       else
         tabuleiro [i][j] = 0; /* substitui os X por 0, para poder guardar na matriz de inteiros */
     }
 
 /* Fim da leitura */
 
-  pthread_t linhas, colunas, quadrados;
+  pthread_t linhas_v[9], colunas_v[9], quadrados_v[9];
   
-  if (pthread_create(&linhas, NULL, f_thread_linhas, NULL))
-    fprintf(stderr, "Erro na criacao da thread. \n");
-  if (pthread_create(&colunas, NULL, f_thread_colunas, NULL))
-    fprintf(stderr, "Erro na criacao da thread. \n");
-  if (pthread_create(&quadrados, NULL, f_thread_quadrados, NULL))
-    fprintf(stderr, "Erro na criacao da thread. \n");
-
-  pthread_join(linhas, NULL);
-  pthread_join(colunas, NULL);
-  pthread_join(quadrados, NULL);
-
-  
+  for (i = 0; i < 9; i++){
+		if (pthread_create(&linhas_v[i], NULL, f_thread_linhas_v,(void*) &i))
+		  fprintf(stderr, "Erro na criacao da thread. \n");
+		if (pthread_create(&colunas_v[i], NULL, f_thread_colunas_v, (void*) &i))
+	      	  fprintf(stderr, "Erro na criacao da thread. \n");
+  	    	if (pthread_create(&quadrados_v[i], NULL, f_thread_quadrados_v, (void*) &i))
+	      	  fprintf(stderr, "Erro na criacao da thread. \n");
+  }
+	
+  for (i = 0; i < 9; i++){
+  	pthread_join(linhas_v[i], NULL);
+	pthread_join(colunas_v[i], NULL);
+	pthread_join(quadrados_v[i], NULL);
+  }
   if (flag_errado == 0)
     printf("Solucao correta!\n");
 

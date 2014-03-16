@@ -5,9 +5,7 @@ outra por colunas e outra por quadrados 3 x 3 */
 #include <stdio.h>
 
 volatile int tabuleiro[9][9];
-volatile int ocorrencias_linhas[9][9];
-volatile int ocorrencias_colunas[9][9];
-volatile int ocorrencias_quadrados[9][9];
+volatile int flag_errado = 0;
 
 /** Thread que verifica se a solução está correta linha a linha */
 void* f_thread_linhas(void *v) {
@@ -15,14 +13,13 @@ void* f_thread_linhas(void *v) {
   int boolean_ocorrencias[9] = {0}; 
   for (i = 0; i < 9; i++){
     for (j = 0; j < 9; j++){
-      if ( tabuleiro[i][j] != 0 ) {
-        if (boolean_ocorrencias [tabuleiro [i][j] - 1] == 0)
-          boolean_ocorrencias [tabuleiro [i][j] - 1] = 1;
+      if (boolean_ocorrencias [tabuleiro [i][j] - 1] == 0)
+        boolean_ocorrencias [tabuleiro [i][j] - 1] = 1;
+      else{
+        flag_errado = 1; /* Já há uma ocorrencia do numero na linha */
+        printf("Mais de uma ocorrencia do numero %d na linha %d\n", tabuleiro [i][j], (i + 1));
       }
     }
-    for (j = 0; j < 9; j++) 
-        ocorrencias_linhas[i][j] = boolean_ocorrencias[j];
- 
     for (j = 0; j < 9; j++)
       boolean_ocorrencias[j] = 0;
   }
@@ -35,14 +32,13 @@ void* f_thread_colunas(void *v) {
   int boolean_ocorrencias[9] = {0}; 
   for (i = 0; i < 9; i++){
     for (j = 0; j < 9; j++){
-      if ( tabuleiro[j][i] != 0 ) {
-        if (boolean_ocorrencias [tabuleiro [j][i] - 1] == 0)
-          boolean_ocorrencias [tabuleiro [j][i] - 1] = 1;
+      if (boolean_ocorrencias [tabuleiro [j][i] - 1] == 0)
+        boolean_ocorrencias [tabuleiro [j][i] - 1] = 1;
+      else{
+        flag_errado = 1;
+        printf("Mais de uma ocorrencia do numero %d na coluna %d\n", tabuleiro [j][i], (i + 1));
       }
     }
-    for (j = 0; j < 9; j++) 
-        ocorrencias_colunas[i][j] = boolean_ocorrencias[j];
-
     for (j = 0; j < 9; j++)
       boolean_ocorrencias[j] = 0;
   }
@@ -58,15 +54,14 @@ void* f_thread_quadrados(void *v) {
   	for (y = 0; y < 9; y += 3){
 			for (i = 0; i < 3; i++){
 				for (j = 0; j < 3; j++){
-				  if ( tabuleiro[i + x][j + y] != 0 ) {
-            if (boolean_ocorrencias [tabuleiro [i + x][j + y] - 1] == 0)
-              boolean_ocorrencias [tabuleiro [i + x][j + y] - 1] = 1;
-          }
+				  if (boolean_ocorrencias [tabuleiro [i + x][j + y] - 1] == 0)
+				    boolean_ocorrencias [tabuleiro [i + x][j + y] - 1] = 1;
+				  else{
+				    flag_errado = 1;
+				    printf("Mais de uma ocorrencia do numero %d no quadrado %d\n", tabuleiro [i + x][j + y], ( (x + 1) + (y/3) ) );
+				  }
 				}
 			}
-      for (j = 0; j < 9; j++) 
-        ocorrencias_quadrados[(x) + (y/3)][j] = boolean_ocorrencias[j];
-
 			for (j = 0; j < 9; j++)
 				boolean_ocorrencias[j] = 0;
 		}
@@ -74,23 +69,7 @@ void* f_thread_quadrados(void *v) {
   return NULL;
 }
 
-/*Imprime as possibilidades de cada posicao*/
-void imprime_possibilidades(int poss[9][9][9], int i, int j) { 
-    int k = 0;    
-    printf("(");
-    for (k = 0; k < 9; k++) {
-        if (poss[i][j][k] == 0)
-            printf ("%d", (k+1));
-    }
-    printf(") ");  
-} 
-     
-
-/*Funcao principal*/
-
 int main() {
-  int possibilidades[9][9][9];
-  int k = 0;
 
 /* Leitura do tabuleiro */
   int i, j;
@@ -119,31 +98,10 @@ int main() {
   pthread_join(colunas, NULL);
   pthread_join(quadrados, NULL);
 
-
-/*Imprimi possibilidades, primeiro inicializa a matriz*/
-  for (i = 0; i < 9; i++)
-    for (j = 0; j < 9; j++)
-        for (k = 0; k < 9; k++)
-            possibilidades[i][j][k] = 0;
   
-  for (i = 0; i < 9; i++){
-    for (j = 0; j < 9; j++){
-      
-      if (tabuleiro[i][j] != 0) {
-        printf("%d ", tabuleiro[i][j]);
-        continue;
-      }
-     
-      for (k = 0; k < 9; k++) {
-        if (ocorrencias_linhas[i][k] != 0 || ocorrencias_colunas[j][k] != 0 || ocorrencias_quadrados[(i/3*3 + j/3)][k] != 0)           
-            possibilidades[i][j][k] = 1;     
-      }
-      
-      imprime_possibilidades(possibilidades, i, j);
-    }
-    printf("\n");
-  }
-     
+  if (flag_errado == 0)
+    printf("Solucao correta!\n");
 
   return 0;
 }
+
