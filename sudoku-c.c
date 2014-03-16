@@ -24,7 +24,7 @@ int convertChar(char c){
 }
 
 void readMatrixFromFile(){
-	FILE *fin  = fopen ("sudoku.in", "r");
+	FILE *fin  = fopen ("sudoku-c.in", "r");
 	int i,j;
 	char c;
 	for (i=0; i<ORDER; ++i){
@@ -46,23 +46,23 @@ void printMatrix(int m[][ORDER]){
 }
 
 void setArrayWithEmptyPositions(){
-  emptys = malloc(sizeof(point)*(ORDER*ORDER));
-  emptys_size = 0;
-  int i,j;
-  for(i=0; i<ORDER; ++i){
-     for(j=0; j<ORDER; ++j){
-       if(matrix[i][j] == 0){
-	 point p;
-	 p.x = i; p.y = j;
-	 emptys[emptys_size++] = p;
-       }
-     }
-  }
+	emptys = malloc(sizeof(point)*(ORDER*ORDER));
+	emptys_size = 0;
+	int i,j;
+	for(i=0; i<ORDER; ++i){
+		for(j=0; j<ORDER; ++j){
+			if(matrix[i][j] == 0){
+				point p;
+				p.x = i; p.y = j;
+				emptys[emptys_size++] = p;
+			}
+		}
+	}
 }
 
 point getPositionForStartPosition(int pos, int startPos){
-  point actuallyPos = emptys[(pos + startPos)%emptys_size];
-  return actuallyPos;
+	point actuallyPos = emptys[(pos + startPos)%emptys_size];
+	return actuallyPos;
 }
 
 bool checkRow(int m[][ORDER], int row, int value){
@@ -103,7 +103,6 @@ bool isInsertionValid(int m[][ORDER], point p, int value){
 
 void solveRec(int m[][ORDER], int startPos, int num_pos, int value){
 	point p = getPositionForStartPosition(num_pos, startPos);
-	
 	if(!foundSolution){
 		for(;value<=ORDER && !isInsertionValid(m,p,value); ++value);
 		if(value <= ORDER){
@@ -123,8 +122,6 @@ void solveRec(int m[][ORDER], int startPos, int num_pos, int value){
 			}
 		}
 	}	
-  
-
 }
 
 void* solveSudoku(void* start){
@@ -140,7 +137,14 @@ void* solveSudoku(void* start){
 	double clockA = clock();
 	
 	solveRec(matrix_copy, startPosition,0,1);
-	if(id_first == startPosition){
+	
+	if (!foundSolution && id_first == -1){
+		id_first = startPosition;
+		printf("\nMATRIZ INVALIDA! A THREAD PARTINDO DA POSICAO %d FOI A PRIMEIRA A CONSTATAR! (%lf s) \n\n",startPosition,(clock()-clockA)/CLOCKS_PER_SEC);
+		finishProgram = true;
+	}
+	
+	else if(foundSolution && id_first == startPosition){
 		printf("\nA THREAD PARTINDO DA POSICAO %d FOI A PRIMEIRA A TERMINAR! (%lf s) \n\n",startPosition,(clock()-clockA)/CLOCKS_PER_SEC);
 		printMatrix(matrix_copy);
 		finishProgram = true;
@@ -167,5 +171,6 @@ int main(){
 	}
 	
 	while(!finishProgram);
+	
 	return 0;
 }
