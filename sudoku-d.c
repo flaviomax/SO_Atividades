@@ -5,11 +5,14 @@ outra por colunas e outra por quadrados 3 x 3 */
 #include <stdio.h>
 
 volatile int tabuleiro[9][9];
+/*Cada linha das matrizes de ocorrencias correnpondem a respectiva linha, coluna ou quadrado, 
+e as colunas correspomdem a ocorrencia de cada numero nessa respectiva linha, coluna ou quadrado*/
 volatile int ocorrencias_linhas[9][9];
 volatile int ocorrencias_colunas[9][9];
 volatile int ocorrencias_quadrados[9][9];
 
-/** Thread que verifica se a solução está correta linha a linha */
+/** Thread que verifica a ocorrencia de cada numero linha a linha
+e armazena o resultado na matriz de ocorrencias_linhas */
 void* f_thread_linhas(void *v) {
   int i, j;
   int boolean_ocorrencias[9] = {0}; 
@@ -29,7 +32,8 @@ void* f_thread_linhas(void *v) {
   return NULL;
 }
 
-/** Verifica a solução coluna a coluna */
+/** Verifica a ocorrencia de cada numero coluna a coluna e 
+armazena o resultado na matriz de ocorrencias_colunas */
 void* f_thread_colunas(void *v) {
   int i, j;
   int boolean_ocorrencias[9] = {0}; 
@@ -49,7 +53,7 @@ void* f_thread_colunas(void *v) {
   return NULL;
 }
 
-/** Verifica a solução a cada quadrado 3x3. Os quadrados são contados
+/** Verifica a ocorrencia de cada numero em cada quadrado 3x3 e armazena o resultado na matriz de ocorrencias_quadrados. Os quadrados são contados
 da esquerda para a direita, de cima para baixo */
 void* f_thread_quadrados(void *v) {
   int i, j, x, y;
@@ -89,7 +93,7 @@ void imprime_possibilidades(int poss[9][9][9], int i, int j) {
 /*Funcao principal*/
 
 int main() {
-  int possibilidades[9][9][9];
+  int possibilidades[9][9][9]; 
   int k = 0;
 
 /* Leitura do tabuleiro */
@@ -105,6 +109,8 @@ int main() {
     }
 
 /* Fim da leitura */
+
+/*Threads que verificam a ocorrencia dos numeros nas linhas, colunas e quadrados*/
 
   pthread_t linhas, colunas, quadrados;
   
@@ -129,6 +135,7 @@ int main() {
   for (i = 0; i < 9; i++){
     for (j = 0; j < 9; j++){
       
+      /*imprimi posicao ja preenchida*/
       if (tabuleiro[i][j] != 0) {
         printf("%d ", tabuleiro[i][j]);
         continue;
